@@ -1,6 +1,7 @@
 siem-client-console/
 ├── backend/
 │   ├── config/
+│   │   └── admins.js
 │   │   └── clients.js
 |   ├── middleware/
 │   │   └── auth.js
@@ -9,6 +10,7 @@ siem-client-console/
 │   │   ├── admin.js
 │   │   └── auth.js
 │   │   └── clients.js
+│   │   └── news.js
 │   ├── app.js
 │   └── .env
 │   └── app.js

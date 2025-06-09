@@ -1941,3 +1941,138 @@ button:hover {
 .admin-submit-btn:hover {
   background-color: #0056b3;
 }
+
+
+/* MFA Modal Styles */
+.mfa-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.mfa-modal.hidden {
+  display: none;
+}
+
+.mfa-modal-content {
+  background: #fff;
+  padding: 30px;
+  border-radius: 10px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.mfa-modal-content h2 {
+  text-align: center;
+  margin-bottom: 30px;
+  color: #333;
+}
+
+.mfa-setup-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.step {
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #f9f9f9;
+}
+
+.step h3 {
+  margin-bottom: 10px;
+  color: #2c3e50;
+}
+
+.step p {
+  margin-bottom: 15px;
+  color: #666;
+}
+
+.qr-container {
+  text-align: center;
+  padding: 20px;
+  background: #fff;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+}
+
+.backup-codes {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.backup-code {
+  padding: 10px;
+  background: #f0f0f0;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  text-align: center;
+  font-family: monospace;
+  font-weight: bold;
+  color: #333;
+}
+
+.backup-btn, .verify-btn {
+  background: #3498db;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.3s;
+}
+
+.backup-btn:hover, .verify-btn:hover {
+  background: #2980b9;
+}
+
+#verifyMfaCode {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 18px;
+  text-align: center;
+  letter-spacing: 2px;
+  margin-bottom: 15px;
+}
+
+/* TOTP Input Styles */
+#totpGroup {
+  margin-top: 10px;
+}
+
+#totpCode {
+  text-align: center;
+  letter-spacing: 2px;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+  .mfa-modal-content {
+    margin: 20px;
+    padding: 20px;
+  }
+  
+  .backup-codes {
+    grid-template-columns: 1fr;
+  }
+}

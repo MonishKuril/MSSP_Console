@@ -49,20 +49,20 @@ router.post('/clients', [authMiddleware, adminAuthMiddleware], (req, res) => {
     if (!name || !url) {
       return res.status(400).json({ success: false, message: 'Name and URL are required' });
     }
-    
+
     const clients = getClients();
     const newId = clients.length > 0 ? Math.max(...clients.map(c => c.id)) + 1 : 1;
-    
-    const newClient = { 
-      id: newId, 
-      name, 
-      url, 
+
+    const newClient = {
+      id: newId,
+      name,
+      url,
       description: description || '',
       graylog: graylog || null,
       logApi: logApi || null,
       adminId: req.user.username // Associate client with the admin
     };
-    
+
     clients.push(newClient);
     writeClientsToFile(clients);
     res.status(201).json({ success: true, client: newClient });
@@ -76,27 +76,27 @@ router.put('/clients/:id', [authMiddleware, adminAuthMiddleware], (req, res) => 
   try {
     const { name, url, description, graylog, logApi } = req.body;
     const clientId = parseInt(req.params.id);
-    
+
     if (!name || !url) {
       return res.status(400).json({ success: false, message: 'Name and URL are required' });
     }
-    
+
     const clients = getClients();
     const clientIndex = clients.findIndex(c => c.id === clientId);
-    
+
     if (clientIndex === -1) {
       return res.status(404).json({ success: false, message: 'Client not found' });
     }
-    
-    clients[clientIndex] = { 
+
+    clients[clientIndex] = {
       ...clients[clientIndex],
-      name, 
-      url, 
+      name,
+      url,
       description: description || clients[clientIndex].description,
       graylog: graylog || clients[clientIndex].graylog || null,
       logApi: logApi || clients[clientIndex].logApi || null
     };
-    
+
     writeClientsToFile(clients);
     res.json({ success: true, client: clients[clientIndex] });
   } catch (error) {
@@ -110,16 +110,66 @@ router.delete('/clients/:id', [authMiddleware, adminAuthMiddleware], (req, res) 
     const clientId = parseInt(req.params.id);
     const clients = getClients();
     const filteredClients = clients.filter(c => c.id !== clientId);
-    
+
     if (filteredClients.length === clients.length) {
       return res.status(404).json({ success: false, message: 'Client not found' });
     }
-    
+
     writeClientsToFile(filteredClients);
     res.json({ success: true, message: 'Client deleted successfully' });
   } catch (error) {
     console.error('Error deleting client:', error);
     res.status(500).json({ success: false, message: 'Failed to delete client' });
+  }
+});
+
+router.post('/admins', [authMiddleware, superAdminAuthMiddleware], async (req, res) => {
+  try {
+    const { username, password, name, email, organization, city, state } = req.body;
+    if (!username || !password || !name || !email || !organization || !city || !state) {
+      return res.status(400).json({ success: false, message: 'All fields are required' });
+    }
+
+    const dotenv = require('dotenv');
+    const envPath = path.join(__dirname, '../.env');
+    const envConfig = dotenv.parse(fs.readFileSync(envPath));
+
+    // Check if admin already exists
+    if (envConfig[`ADMIN_USERNAME_${username}`]) {
+      return res.status(400).json({ success: false, message: 'Admin already exists' });
+    }
+
+    // Create new admin credentials in .env
+    const newEnvContent = `
+ADMIN_USERNAME_${username}=${username}
+ADMIN_PASSWORD_${username}=${password}
+`;
+
+    fs.appendFileSync(envPath, newEnvContent, 'utf8');
+
+    // Reload environment variables
+    delete require.cache[require.resolve('dotenv')];
+    require('dotenv').config();
+
+    // Add admin details to admins.js
+    const admins = getAdmins();
+    const newAdmin = {
+      id: admins.length > 0 ? Math.max(...admins.map(a => a.id)) + 1 : 1,
+      name,
+      email,
+      organization,
+      city,
+      state,
+      mfaSecret: null // Will be set during first login
+    };
+
+    admins.push(newAdmin);
+    writeAdminsToFile(admins);
+
+    res.status(201).json({ success: true, message: 'Admin created successfully. They will need to setup MFA on first login.' });
+  } catch (error) {
+    console.error('Error creating admin:', error);
+    res.status(500).json({ success: false, message: 'Failed to create admin' });
   }
 });
 
@@ -135,15 +185,15 @@ router.get('/admins', [authMiddleware, superAdminAuthMiddleware], (req, res) => 
     res.status(500).json({ success: false, message: 'Failed to fetch admins' });
   }
 });
-    
-    /////////////
+
+/////////////
 
 router.get('/admins/:adminId/clients', [authMiddleware, superAdminAuthMiddleware], (req, res) => {
   try {
     const { adminId } = req.params;
     const clients = getClients();
     const adminClients = clients.filter(client => client.adminId === adminId);
-    
+
     res.json(adminClients);
   } catch (error) {
     console.error('Error fetching admin clients:', error);
@@ -151,52 +201,4 @@ router.get('/admins/:adminId/clients', [authMiddleware, superAdminAuthMiddleware
   }
 });
 
-router.post('/admins', [authMiddleware, superAdminAuthMiddleware], async (req, res) => {
-  try {
-    const { username, password, name, email, organization, city, state } = req.body;
-    if (!username || !password || !name || !email || !organization || !city || !state) {
-      return res.status(400).json({ success: false, message: 'All fields are required' });
-    }
-    
-    // Add new admin credentials to .env
-    const dotenv = require('dotenv');
-    const envPath = path.join(__dirname, '../.env');
-    const envConfig = dotenv.parse(fs.readFileSync(envPath));
-    
-    // Check if admin already exists
-    for (const key in envConfig) {
-      if (key === `ADMIN_USERNAME_${username}` || key === `ADMIN_PASSWORD_${username}`) {
-        return res.status(400).json({ success: false, message: 'Admin already exists' });
-      }
-    }
-    
-    // Create new admin keys
-    const newEnvContent = `
-ADMIN_USERNAME_${username}=${username}
-ADMIN_PASSWORD_${username}=${password}
-    `;
-    
-    fs.appendFileSync(envPath, newEnvContent, 'utf8');
-    dotenv.config();
-    
-    // Add admin details to admins.js
-    const admins = getAdmins();
-    const newAdmin = { 
-      id: admins.length > 0 ? Math.max(...admins.map(a => a.id)) + 1 : 1,
-      name,
-      email,
-      organization,
-      city,
-      state
-    };
-    
-    admins.push(newAdmin);
-    writeAdminsToFile(admins);
-    
-    res.status(201).json({ success: true, message: 'Admin created successfully' });
-  } catch (error) {
-    console.error('Error creating admin:', error);
-    res.status(500).json({ success: false, message: 'Failed to create admin' });
-  }
-});
 module.exports = router;
