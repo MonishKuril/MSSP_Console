@@ -86,31 +86,32 @@
           </table>
         </div>
       </div>
+<div id="superAdminView" class="management-panel hidden">
+        <div class="panel-header">
+          <h2>Admin Management</h2>
+          <button id="addAdminBtn" class="action-btn">+ Add New Admin</button>
+        </div>
+        <div class="admins-table-container">
+          <table class="admins-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email ID</th>
+                <th>Organization Name</th>
+                <th>City</th>
+                <th>State</th>
+                <th>Actions</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="adminsTableBody">
+              <!-- Admins and their details will be loaded here dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
 
-           <div id="superAdminView" class="management-panel hidden">
-  <div class="panel-header">
-    <h2>Admin Management</h2>
-    <button id="addAdminBtn" class="action-btn">+ Add New Admin</button>
-  </div>
-  <div class="admins-table-container">
-    <table class="admins-table">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Name</th>
-          <th>Email ID</th>
-          <th>Organization Name</th>
-          <th>City</th>
-          <th>State</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody id="adminsTableBody">
-        <!-- Admins and their details will be loaded here dynamically -->
-      </tbody>
-    </table>
-  </div>
-</div></div>
 
         <div id="addAdminModal" class="admin-modal hidden">
           <div class="admin-modal-content">

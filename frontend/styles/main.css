@@ -90,6 +90,8 @@ button:hover {
     background-color: #7f8c8d;
 }
 
+
+
 .background {
     background-image: url('../meta.jpeg');
     background-size: cover;
@@ -165,16 +167,16 @@ button:hover {
     margin: 0 auto 20px;
     height: 60px;
 }
-
 .form-group {
     position: relative;
     margin-bottom: 20px;
 }
 
-.form-group input {
+.form-group input,
+.form-group select {
     width: 100%;
     padding: 12px 40px 12px 40px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--border-color);
     border-radius: 8px;
     font-size: 16px;
 }
@@ -183,6 +185,39 @@ button:hover {
     position: absolute;
     top: 50%;
     left: 12px;
+    transform: translateY(-50%);
+    fill: #aaa;
+}
+
+/* Multifactor Authentication Code Styles */
+#totpGroup label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 450;
+    text-align: center; /* Align text to the left */
+}
+
+#totpGroup input {
+    width: 100%;
+    padding: 12px 40px 12px 40px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 16px;
+}
+
+/* Select Role Label */
+#roleGroup label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 450; /* Lighter font weight */
+    color: #666; /* Lighter text color */
+}
+
+/* Select Role Icon */
+#roleGroup svg {
+    position: absolute;
+    top: 50%;
+    right: 12px;
     transform: translateY(-50%);
     fill: #aaa;
 }
@@ -2075,4 +2110,25 @@ button:hover {
   .backup-codes {
     grid-template-columns: 1fr;
   }
+}
+
+/* Status indicators */
+.admin-status.active {
+  color: #2ecc71;
+  font-weight: bold;
+}
+
+.admin-status.blocked {
+  color: #e74c3c;
+  font-weight: bold;
+}
+
+/* Block button styling */
+.block-admin-btn {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.block-admin-btn[data-blocked="true"] {
+  background-color: #2ecc71;
 }
