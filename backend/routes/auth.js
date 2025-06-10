@@ -8,6 +8,22 @@ const fs = require('fs');
 const path = require('path');
 require('dotenv').config();
 
+const getAdmins = () => {
+  try {
+    delete require.cache[require.resolve('../config/admins')];
+    return require('../config/admins');
+  } catch (error) {
+    console.error('Error reading admins:', error);
+    return [];
+  }
+};
+
+const isAdminBlocked = (username) => {
+  const admins = getAdmins();
+  const admin = admins.find(a => a.email === username || a.name === username);
+  return admin ? admin.blocked : false;
+};
+
 // Generate backup codes
 const generateBackupCodes = () => {
   return Array.from({ length: 10 }, () => 
@@ -107,7 +123,6 @@ const updateEnvVariable = (key, value) => {
   delete require.cache[require.resolve('dotenv')];
   require('dotenv').config();
 };
-
 router.post('/login', (req, res) => {
   const { username, password, role, totpCode } = req.body;
 
@@ -116,6 +131,15 @@ router.post('/login', (req, res) => {
   if (role === 'superadmin') {
     validCredentials = username === process.env.SUPERADMIN_USERNAME && password === process.env.SUPERADMIN_PASSWORD;
   } else if (role === 'admin') {
+    // Check if admin is blocked BEFORE validating credentials
+    if (isAdminBlocked(username)) {
+      return res.status(403).json({ 
+        success: false, 
+        message: 'Your account has been blocked by the administrator. Please contact support.',
+        blocked: true 
+      });
+    }
+
     if (username === process.env.ADMIN_USERNAME && password === process.env.ADMIN_PASSWORD) {
       validCredentials = true;
     } else {

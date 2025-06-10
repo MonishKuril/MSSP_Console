@@ -30,6 +30,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   await loadClients();
   //leaderboard dashboard
   await updateLeaderboard();
+  await loadAdminsAndClients();
 
    //news ticker
  initializeNewsTicker();
@@ -422,42 +423,63 @@ function openClientDashboard(client) {
   // Directly open the client's dashboard in a new tab
   window.open(client.url, "_blank");
 }
+
 async function loadAdminsAndClients() {
   const tableBody = document.getElementById("adminsTableBody");
-  if (!tableBody) return;
-  tableBody.innerHTML = '<tr><td colspan="7">Loading admins...</td></tr>';
+  if (!tableBody) {
+    console.error("Admins table body not found");
+    return;
+  }
+  console.log("Loading admins...");
+  tableBody.innerHTML = '<tr><td colspan="8">Loading admins...</td></tr>';
   
   try {
     const response = await fetch("/api/admin/admins", { credentials: "include" });
     if (!response.ok) throw new Error("Failed to load admins");
     const admins = await response.json();
+    console.log("Admins data received:", admins);
     if (!Array.isArray(admins)) {
       throw new Error("Invalid response format: admins is not an array");
     }
     if (admins.length === 0) {
       tableBody.innerHTML =
-        '<tr><td colspan="7">No admins found.</td></tr>';
+        '<tr><td colspan="8">No admins found.</td></tr>';
       return;
     }
     tableBody.innerHTML = "";
-    admins.forEach(admin => {
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td>${admin.id}</td>
-        <td>${admin.name}</td>
-        <td>${admin.email}</td>
-        <td>${admin.organization}</td>
-        <td>${admin.city}</td>
-        <td>${admin.state}</td>
-        <td class="table-actions">
-          <button class="table-btn view-admin-client-btn" data-admin-id="${admin.id}">View Client</button>
-          <button class="table-btn edit-admin-btn" data-admin-id="${admin.id}">Edit Admin</button>
-        </td>
-      `;
-      tableBody.appendChild(row);
+     admins.forEach(admin => {
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${admin.id}</td>
+      <td>${admin.name}</td>
+      <td>${admin.email}</td>
+      <td>${admin.organization}</td>
+      <td>${admin.city}</td>
+      <td>${admin.state}</td>
+      <td class="admin-status ${admin.blocked ? 'blocked' : 'active'}">
+        ${admin.blocked ? 'Blocked' : 'Active'}
+      </td>
+      <td class="table-actions">
+        <button class="table-btn view-admin-client-btn" data-admin-id="${admin.id}">View Client</button>
+        <button class="table-btn edit-admin-btn" data-admin-id="${admin.id}">Edit Admin</button>
+        <button class="table-btn block-admin-btn" 
+                data-admin-id="${admin.id}" 
+                data-blocked="${admin.blocked}">
+          ${admin.blocked ? 'Unblock' : 'Block'}
+        </button>
+      </td>
+    `;
+    tableBody.appendChild(row);
+  });
+
+   document.querySelectorAll('.block-admin-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const adminId = this.dataset.adminId;
+      const isBlocked = this.dataset.blocked === 'true';
+      toggleAdminBlock(adminId, isBlocked);
     });
-    
-    // Add event listeners for admin client buttons
+  });
+
     document.querySelectorAll('.view-admin-client-btn').forEach(btn => {
       btn.addEventListener('click', async function() {
         const adminId = this.dataset.adminId;
@@ -465,20 +487,54 @@ async function loadAdminsAndClients() {
         await viewAdminClient(adminId, clientId);
       });
     });
-    
+
     document.querySelectorAll('.edit-admin-btn').forEach(btn => {
       btn.addEventListener('click', function() {
         const adminId = this.dataset.adminId;
         showEditAdminModal(adminId);
       });
     });
+
   } catch (error) {
     console.error("Error loading admins:", error);
     tableBody.innerHTML =
-      '<tr><td colspan="7">Error loading admins. Try refreshing the page.</td></tr>';
+      '<tr><td colspan="8">Error loading admins. Try refreshing the page.</td></tr>';
   }
 }
+// Add toggleAdminBlock function
+async function toggleAdminBlock(adminId, isBlocked) {
+  if (!confirm(`Are you sure you want to ${isBlocked ? 'unblock' : 'block'} this admin?`)) {
+    return;
+  }
 
+  try {
+    const response = await fetch(`/api/admin/admins/${adminId}/block`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ blocked: !isBlocked })
+    });
+
+    const data = await response.json();
+    if (data.success) {
+      showMessage(`Admin ${!isBlocked ? 'blocked' : 'unblocked'} successfully`, 'success');
+      // Update UI without reloading
+      const btn = document.querySelector(`.block-admin-btn[data-admin-id="${adminId}"]`);
+      const statusCell = btn.closest('tr').querySelector('.admin-status');
+      
+      btn.dataset.blocked = !isBlocked;
+      btn.textContent = isBlocked ? 'Block' : 'Unblock';
+      
+      statusCell.textContent = isBlocked ? 'Active' : 'Blocked';
+      statusCell.className = `admin-status ${isBlocked ? 'active' : 'blocked'}`;
+    } else {
+      showMessage(data.message || 'Failed to update admin status', 'error');
+    }
+  } catch (error) {
+    console.error('Error toggling admin block status:', error);
+    showMessage('Error updating admin status', 'error');
+  }
+}
 function showAddClientModal() {
   const modal = document.getElementById("addClientModal");
   const form = document.getElementById("addClientForm");
@@ -1023,66 +1079,6 @@ function showAddAdminModal() {
   modal.classList.remove("hidden"); // Show modal
 }
 
-async function loadAdminsAndClients() {
-  const tableBody = document.getElementById("adminsTableBody");
-  if (!tableBody) return;
-  tableBody.innerHTML = '<tr><td colspan="7">Loading admins...</td></tr>';
-  
-  try {
-    const response = await fetch("/api/admin/admins", { credentials: "include" });
-    if (!response.ok) throw new Error("Failed to load admins");
-    const admins = await response.json();
-    console.log("Admins data received:", admins); // Log the response
-
-    if (!Array.isArray(admins)) {
-      throw new Error("Invalid response format: admins is not an array");
-    }
-
-    if (admins.length === 0) {
-      tableBody.innerHTML =
-        '<tr><td colspan="7">No admins found.</td></tr>';
-      return;
-    }
-
-    tableBody.innerHTML = "";
-    admins.forEach(admin => {
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td>${admin.id}</td>
-        <td>${admin.name}</td>
-        <td>${admin.email}</td>
-        <td>${admin.organization}</td>
-        <td>${admin.city}</td>
-        <td>${admin.state}</td>
-        <td class="table-actions">
-          <button class="table-btn view-admin-client-btn" data-admin-id="${admin.id}">View Client</button>
-          <button class="table-btn edit-admin-btn" data-admin-id="${admin.id}">Edit Admin</button>
-        </td>
-      `;
-      tableBody.appendChild(row);
-    });
-
-    // Add event listeners for admin client buttons
-    document.querySelectorAll('.view-admin-client-btn').forEach(btn => {
-      btn.addEventListener('click', async function() {
-        const adminId = this.dataset.adminId;
-        const clientId = this.parentElement.previousElementSibling.querySelector('select').value;
-        await viewAdminClient(adminId, clientId);
-      });
-    });
-
-    document.querySelectorAll('.edit-admin-btn').forEach(btn => {
-      btn.addEventListener('click', function() {
-        const adminId = this.dataset.adminId;
-        showEditAdminModal(adminId);
-      });
-    });
-  } catch (error) {
-    console.error("Error loading admins:", error);
-    tableBody.innerHTML =
-      '<tr><td colspan="7">Error loading admins. Try refreshing the page.</td></tr>';
-  }
-}
 async function addAdminSubmitHandler(e) {
   e.preventDefault();
   const username = document.getElementById("adminUsername").value.trim();

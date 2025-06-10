@@ -2,8 +2,6 @@ const express = require('express');
 const router = express.Router();
 const fs = require('fs');
 const path = require('path');
-const https = require('https');
-const http = require('http');
 const { authMiddleware, adminAuthMiddleware, superAdminAuthMiddleware } = require('../middleware/auth');
 const clientsFilePath = path.join(__dirname, '../config/clients.js');
 
@@ -151,7 +149,7 @@ ADMIN_PASSWORD_${username}=${password}
     delete require.cache[require.resolve('dotenv')];
     require('dotenv').config();
 
-    // Add admin details to admins.js
+    // Add admin details to admins.js with blocked field
     const admins = getAdmins();
     const newAdmin = {
       id: admins.length > 0 ? Math.max(...admins.map(a => a.id)) + 1 : 1,
@@ -160,13 +158,18 @@ ADMIN_PASSWORD_${username}=${password}
       organization,
       city,
       state,
-      mfaSecret: null // Will be set during first login
+      mfaSecret: null, // Will be set during first login
+      blocked: false // Default to unblocked
     };
 
     admins.push(newAdmin);
     writeAdminsToFile(admins);
 
-    res.status(201).json({ success: true, message: 'Admin created successfully. They will need to setup MFA on first login.' });
+    res.status(201).json({ 
+      success: true, 
+      message: 'Admin created successfully. They will need to setup MFA on first login.',
+      admin: newAdmin
+    });
   } catch (error) {
     console.error('Error creating admin:', error);
     res.status(500).json({ success: false, message: 'Failed to create admin' });
@@ -198,6 +201,54 @@ router.get('/admins/:adminId/clients', [authMiddleware, superAdminAuthMiddleware
   } catch (error) {
     console.error('Error fetching admin clients:', error);
     res.status(500).json({ success: false, message: 'Failed to fetch admin clients' });
+  }
+});
+
+router.patch('/admins/:id/block', [authMiddleware, superAdminAuthMiddleware], (req, res) => {
+  try {
+    const adminId = parseInt(req.params.id);
+    const { blocked } = req.body;
+
+    if (typeof blocked !== 'boolean') {
+      return res.status(400).json({ success: false, message: 'Blocked status must be a boolean' });
+    }
+
+    const admins = getAdmins();
+    const adminIndex = admins.findIndex(a => a.id === adminId);
+
+    if (adminIndex === -1) {
+      return res.status(404).json({ success: false, message: 'Admin not found' });
+    }
+
+    // Update the blocked status
+    admins[adminIndex].blocked = blocked;
+    writeAdminsToFile(admins);
+
+    res.json({ 
+      success: true, 
+      message: `Admin ${blocked ? 'blocked' : 'unblocked'} successfully`,
+      admin: admins[adminIndex]
+    });
+  } catch (error) {
+    console.error('Error updating admin block status:', error);
+    res.status(500).json({ success: false, message: 'Failed to update admin status' });
+  }
+});
+
+router.get('/admins/:id', [authMiddleware, superAdminAuthMiddleware], (req, res) => {
+  try {
+    const adminId = parseInt(req.params.id);
+    const admins = getAdmins();
+    const admin = admins.find(a => a.id === adminId);
+
+    if (!admin) {
+      return res.status(404).json({ success: false, message: 'Admin not found' });
+    }
+
+    res.json({ success: true, admin });
+  } catch (error) {
+    console.error('Error fetching admin:', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch admin' });
   }
 });
 

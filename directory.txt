@@ -1,4 +1,4 @@
-siem-client-console/
+MSSP/MSP console/
 ├── backend/
 │   ├── config/
 │   │   └── admins.js

@@ -42,7 +42,11 @@
             window.location.href = '/dashboard.html';
           }
         } else {
-          showMessage(data.message || 'Login failed');
+          if (data.blocked) {
+            showMessage('Your account has been blocked by the administrator. Please contact support.');
+          } else {
+            showMessage(data.message || 'Login failed');
+          }
         }
       } catch (error) {
         console.error('Login error:', error);
@@ -50,7 +54,7 @@
       }
     });
   }
-
+  
   async function setupMFA() {
     try {
       const response = await fetch('/api/auth/setup-mfa', {

@@ -6,7 +6,8 @@ module.exports = [
         "organization": "corp est",
         "city": "New York",
         "state": "NY",
-         "mfaSecret": "JBSWY3DPEHPK3PXP" 
+        "mfaSecret": "JBSWY3DPEHPK3PXP",
+        "blocked": false
     },
     {
         "id": 2,
@@ -15,7 +16,8 @@ module.exports = [
         "organization": "bingo",
         "city": "bing",
         "state": "bing",
-        "mfaSecret": "JBSWY3DPEHPK3PXP"
+        "mfaSecret": "JBSWY3DPEHPK3PXP",
+        "blocked": true
     },
     {
         "id": 3,
@@ -24,6 +26,26 @@ module.exports = [
         "organization": "mong",
         "city": "mong",
         "state": "mong",
-        "mfaSecret": "JBSWY3DPEHPK3PXP"
+        "mfaSecret": "JBSWY3DPEHPK3PXP",
+        "blocked": false
+    },
+    {
+        "id": 4,
+        "name": "lucy",
+        "email": "lucy@gmail.com",
+        "organization": "luccy",
+        "city": "luccy",
+        "state": "luccy",
+        "blocked": false
+    },
+    {
+        "id": 5,
+        "name": "moni",
+        "email": "moni@gmail.com",
+        "organization": "moni",
+        "city": "moni",
+        "state": "moni",
+        "mfaSecret": null,
+        "blocked": false
     }
 ];
