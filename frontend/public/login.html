@@ -46,6 +46,10 @@
               <option value="superadmin">Super Admin</option>
             </select>
           </div>
+          <div class="form-group hidden" id="totpGroup">
+            <span class="icon">🔐</span>
+            <input type="text" id="totpCode" placeholder="Enter 6-digit code" maxlength="6" />
+          </div>
           <button type="submit" class="login-btn">Login</button>
           <div>
             <img src="../VG_logo.png" alt="Virtual galaxy Logo" class="vgipl_logo" />
@@ -54,6 +58,33 @@
       </div>
     </div>
   </div>
+
+  <!-- MFA Setup Modal -->
+  <div id="mfaSetupModal" class="mfa-modal hidden">
+    <div class="mfa-modal-content">
+      <h2>Setup Multi-Factor Authentication</h2>
+      <div class="mfa-setup-steps">
+        <div class="step">
+          <h3>Step 1: Scan QR Code</h3>
+          <p>Scan this QR code with Google Authenticator or any TOTP app:</p>
+          <div id="qrCodeContainer" class="qr-container"></div>
+        </div>
+        <div class="step">
+          <h3>Step 2: Save Backup Codes</h3>
+          <p>Save these backup codes in a safe place:</p>
+          <div id="backupCodesContainer" class="backup-codes"></div>
+          <button id="downloadBackupCodes" class="backup-btn">Download Backup Codes</button>
+        </div>
+        <div class="step">
+          <h3>Step 3: Verify Setup</h3>
+          <p>Enter the 6-digit code from your authenticator app:</p>
+          <input type="text" id="verifyMfaCode" placeholder="000000" maxlength="6" />
+          <button id="verifyMfaBtn" class="verify-btn">Verify & Complete Setup</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="../scripts/auth.js"></script>
 </body>
 </html>
