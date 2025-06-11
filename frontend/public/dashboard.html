@@ -4,16 +4,21 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SIEM Console - Dashboard</title>
-  <meta http-equiv="Content-Security-Policy"
-        content="default-src 'self'; script-src 'self'; connect-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;">
-  <link rel="stylesheet" href="http://192.168.1.70:7000\MSSP_CONSOLE\frontend\styles\main.css">
-  <link rel="icon" href="http://192.168.1.70:7000\MSSP_CONSOLE\frontend\public\cybersentinel_fevicon.png" type="image/x-icon">
+  <meta http-equiv="Content-Security-Policy" content="
+    default-src 'self' http://192.168.1.70:7000;
+    script-src 'self' http://192.168.1.70:7000;
+    connect-src 'self' http://192.168.1.70:7000;
+    style-src 'self' http://192.168.1.70:7000;
+    img-src 'self' http://192.168.1.70:7000;
+  ">
+  <link rel="stylesheet" href="../styles/main.css">
+  <link rel="icon" href="../public/cybersentinel_fevicon.png" type="image/x-icon">
 </head>
 <body class="dashboard-bg">
   <div class="dashboard-container">
     <header class="taskbar">
       <div class="taskbar-left">
-        <img src="http://192.168.1.70:7000\MSSP_CONSOLE\frontend\public\cybersentinel_fevicon.png" alt="CyberSentinel Logo" class="logo" />
+        <img src="../public/cybersentinel_fevicon.png" alt="CyberSentinel Logo" class="logo" />
         <h1>MSSP Client Console</h1>
       </div>
       <div class="taskbar-right">
@@ -253,7 +258,7 @@
       </div>
     </footer>
   </div>
-  <script src="http://192.168.1.70:7000\MSSP_CONSOLE\frontend\scripts/auth.js"></script>
-  <script src="http://192.168.1.70:7000\MSSP_CONSOLE\frontend\scripts/dashboard.js"></script>
+  <script src="../scripts/auth.js"></script>
+  <script src="../scripts/dashboard.js"></script>
 </body>
 </html>
